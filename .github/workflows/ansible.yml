@@ -1,0 +1,37 @@
+name: Ansible
+
+# ansible-lint con las colecciones del requirements.yml.
+
+on:
+  workflow_call:
+    inputs:
+      directorio:
+        type: string
+        default: ansible
+      rutas:
+        description: Qué se pasa a ansible-lint
+        type: string
+        default: playbooks roles
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.directorio }}
+    steps:
+      - uses: actions/checkout@v5
+      - run: pipx install ansible-lint && pipx inject ansible-lint ansible-core
+      - env:
+          RUTAS: ${{ inputs.rutas }}
+        run: |
+          # El ansible-galaxy del runner ya trae las colecciones, pero ansible-lint
+          # (pipx) no las ve: se instalan donde las busca
+          if [ -f requirements.yml ]; then
+            ansible-galaxy collection install -r requirements.yml -p ~/.ansible/collections --force
+          fi
+          # shellcheck disable=SC2086
+          ansible-lint $RUTAS

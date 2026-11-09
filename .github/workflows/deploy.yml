@@ -1,0 +1,28 @@
+name: Deploy
+
+# Despliegue en el OptiPlex con el runner del servicio. El runner no toca el
+# código: deploy-repo (root, vía sudo) trae el repo por su cuenta y solo
+# instala commits que ya están en main.
+
+on:
+  workflow_call:
+    inputs:
+      servicio:
+        description: Etiqueta del runner y nombre que entiende deploy-repo
+        type: string
+        required: true
+
+permissions: {}
+
+jobs:
+  deploy:
+    # Por si el que llama se olvida del if: nunca desde PRs ni otras ramas
+    if: github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: [self-hosted, "${{ inputs.servicio }}"]
+    concurrency:
+      group: deploy-${{ inputs.servicio }}
+      cancel-in-progress: false
+    steps:
+      - env:
+          SERVICIO: ${{ inputs.servicio }}
+        run: sudo -n /usr/local/sbin/deploy-repo "$SERVICIO" "$GITHUB_SHA"

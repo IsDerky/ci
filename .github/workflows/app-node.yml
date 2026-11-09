@@ -1,0 +1,114 @@
+name: App Node
+
+# Instalar, lint, tipos, tests y build de una app con bun, npm o pnpm.
+
+on:
+  workflow_call:
+    inputs:
+      gestor:
+        description: bun, npm o pnpm
+        type: string
+        required: true
+      node:
+        description: Versión de Node (con bun no se usa)
+        type: string
+        default: "22"
+      pnpm:
+        description: Versión de pnpm; vacío = la de packageManager
+        type: string
+        default: ""
+      directorio:
+        description: Dónde está el package.json
+        type: string
+        default: "."
+      lint:
+        type: boolean
+        default: false
+      typecheck:
+        type: boolean
+        default: false
+      test:
+        type: boolean
+        default: false
+      build:
+        type: boolean
+        default: true
+      env:
+        description: Variables para todo el job, CLAVE=valor una por línea
+        type: string
+        default: ""
+      extra:
+        description: Comandos sueltos al final, desde la raíz del repo
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ci-${{ github.repository }}-${{ github.ref }}-${{ inputs.directorio }}
+      cancel-in-progress: true
+    defaults:
+      run:
+        working-directory: ${{ inputs.directorio }}
+    env:
+      GESTOR: ${{ inputs.gestor }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Variables
+        if: inputs.env != ''
+        env:
+          VARS: ${{ inputs.env }}
+        run: printf '%s\n' "$VARS" >> "$GITHUB_ENV"
+
+      - if: inputs.gestor == 'bun'
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - if: inputs.gestor == 'pnpm'
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ inputs.pnpm }}
+          package_json_file: ${{ inputs.directorio }}/package.json
+
+      - if: inputs.gestor != 'bun'
+        uses: actions/setup-node@v5
+        with:
+          node-version: ${{ inputs.node }}
+          cache: ${{ inputs.gestor }}
+          cache-dependency-path: ${{ inputs.directorio }}/${{ inputs.gestor == 'pnpm' && 'pnpm-lock.yaml' || 'package-lock.json' }}
+
+      - name: Instalar
+        run: |
+          case "$GESTOR" in
+            bun)  bun install --frozen-lockfile; echo "RUN=bun run" >> "$GITHUB_ENV" ;;
+            npm)  npm ci;                        echo "RUN=npm run" >> "$GITHUB_ENV" ;;
+            pnpm) pnpm install --frozen-lockfile; echo "RUN=pnpm run" >> "$GITHUB_ENV" ;;
+            *)    echo "::error::gestor desconocido: $GESTOR"; exit 1 ;;
+          esac
+
+      - if: inputs.lint
+        run: $RUN lint
+
+      - if: inputs.typecheck
+        run: $RUN typecheck
+
+      # Con bun, el test runner propio (sin script "test" en el package.json)
+      - if: inputs.test
+        run: |
+          if [ "$GESTOR" = bun ]; then bun test; else $RUN test; fi
+
+      - if: inputs.build
+        run: $RUN build
+
+      - name: Extra
+        if: inputs.extra != ''
+        working-directory: .
+        env:
+          EXTRA: ${{ inputs.extra }}
+        run: bash -euo pipefail -c "$EXTRA"
