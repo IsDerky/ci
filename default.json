@@ -23,6 +23,17 @@
       "matchDatasources": ["docker"],
       "matchUpdateTypes": ["minor", "patch"],
       "groupName": "imágenes Docker (minor/patch)"
+    },
+    {
+      "description": "npm/bun: minor y patch en un PR; las major van solas",
+      "matchManagers": ["npm", "bun"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "dependencias npm (minor/patch)"
     }
-  ]
+  ],
+  "vulnerabilityAlerts": {
+    "description": "Avisos de seguridad: PR en cuanto salen, sin esperar al lunes",
+    "labels": ["seguridad"],
+    "schedule": ["at any time"]
+  }
 }
