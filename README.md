@@ -41,6 +41,14 @@ Las entradas de cada uno están documentadas arriba del propio fichero.
 
 `deploy.yml` corre en un runner self-hosted con la etiqueta del servicio y solo llama a `sudo deploy-repo <servicio> <sha>`. El runner no ejecuta código del repo: `deploy-repo` (root) hace su propio fetch, comprueba que el commit está en main y lanza el instalador del repo. Aunque el que llama se olvide del `if`, el job no corre fuera de un push a la rama por defecto.
 
+## Renovate
+
+`default.json` es la base común de Renovate: lunes antes de las 7, máximo 5 PRs abiertos, todas las actions en un PR y las imágenes Docker minor/patch en otro. Cada repo la usa con:
+
+```json
+{ "extends": ["github>IsDerky/ci"] }
+```
+
 ## Versiones
 
 `v1` es una etiqueta móvil que apunta al último `v1.x.y`. Los cambios que rompan algo van a `v2`.

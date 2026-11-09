@@ -1,0 +1,13 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["local>IsDerky/ci"],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "actionlint va como imagen en un run",
+      "managerFilePatterns": ["/^\\.github/workflows/[^/]+\\.ya?ml$/"],
+      "matchStrings": ["(?<depName>rhysd/actionlint):(?<currentValue>\\d[\\w.-]*)"],
+      "datasourceTemplate": "docker"
+    }
+  ]
+}
