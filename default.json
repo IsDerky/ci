@@ -1,0 +1,28 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Base común de Renovate para mis repos (github>IsDerky/ci)",
+  "extends": ["config:recommended"],
+  "timezone": "Europe/Madrid",
+  "schedule": ["before 7am on monday"],
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 0,
+  "labels": ["dependencias"],
+  "semanticCommits": "disabled",
+  "commitMessageAction": "Actualizar",
+  "commitMessageTopic": "{{depName}}",
+  "commitMessageExtra": "a {{{newValue}}}",
+  "gitIgnoredAuthors": ["41898282+github-actions[bot]@users.noreply.github.com"],
+  "packageRules": [
+    {
+      "description": "Todas las actions en un PR",
+      "matchManagers": ["github-actions"],
+      "groupName": "actions de GitHub"
+    },
+    {
+      "description": "Imágenes Docker: minor y patch juntas; las major van solas",
+      "matchDatasources": ["docker"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "imágenes Docker (minor/patch)"
+    }
+  ]
+}
