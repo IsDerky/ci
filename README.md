@@ -43,7 +43,7 @@ Las entradas de cada uno están documentadas arriba del propio fichero.
 
 ## Renovate
 
-`default.json` es la base común de Renovate: lunes antes de las 7, máximo 5 PRs abiertos, todas las actions en un PR y las imágenes Docker minor/patch en otro. Cada repo la usa con:
+`default.json` es la base común de Renovate: lunes antes de las 7, máximo 5 PRs abiertos, todas las actions en un PR y las imágenes Docker minor/patch en otro. Los patch se fusionan solos cuando pasan todas las comprobaciones (las espera Renovate, no el auto-merge de GitHub, que sin checks obligatorios fusionaría al momento; sin CI no fusiona nunca). En un repo con deploy por push eso es un despliegue, así que el CI tiene que probar de verdad. Cada repo la usa con:
 
 ```json
 { "extends": ["github>IsDerky/ci"] }
