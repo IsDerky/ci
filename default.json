@@ -29,6 +29,13 @@
       "matchManagers": ["npm", "bun"],
       "matchUpdateTypes": ["minor", "patch"],
       "groupName": "dependencias npm (minor/patch)"
+    },
+    {
+      "description": "Patch con el CI en verde: se fusionan solos. Un grupo solo si todo lo que lleva es patch; las 0.x no, ahí un patch puede romper",
+      "matchUpdateTypes": ["patch", "pin", "digest"],
+      "matchCurrentVersion": "!/^v?0\\./",
+      "automerge": true,
+      "platformAutomerge": false
     }
   ],
   "vulnerabilityAlerts": {
