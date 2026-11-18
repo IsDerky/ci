@@ -8,6 +8,13 @@
       "managerFilePatterns": ["/^\\.github/workflows/[^/]+\\.ya?ml$/"],
       "matchStrings": ["(?<depName>rhysd/actionlint):(?<currentValue>\\d[\\w.-]*)"],
       "datasourceTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "description": "Binarios que se bajan en un run (# renovate: encima de la versión)",
+      "managerFilePatterns": ["/^\\.github/workflows/[^/]+\\.ya?ml$/"],
+      "matchStrings": ["# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+\\w+: (?<currentValue>\\d[\\w.-]*)"],
+      "extractVersionTemplate": "^v?(?<version>.*)$"
     }
   ]
 }

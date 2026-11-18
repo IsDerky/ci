@@ -41,11 +41,19 @@ on:
         description: Comandos sueltos al final, desde la raíz del repo
         type: string
         default: ""
+      secretos:
+        description: gitleaks sobre los commits nuevos (false si el repo llama a esto varias veces)
+        type: boolean
+        default: true
 
 permissions:
   contents: read
 
 jobs:
+  secretos:
+    if: inputs.secretos
+    uses: IsDerky/ci/.github/workflows/secretos.yml@v1
+
   ci:
     runs-on: ubuntu-latest
     concurrency:
