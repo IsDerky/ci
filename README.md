@@ -8,6 +8,7 @@ Workflows reutilizables de GitHub Actions para mis repos. Cada repo deja un `ci.
 | `imagen.yml` | docker build, arranca el contenedor y comprueba que responde; opcional subir a GHCR |
 | `deploy.yml` | despliegue en el servidor con el runner self-hosted del servicio |
 | `ansible.yml` | ansible-lint con las colecciones del `requirements.yml` |
+| `secretos.yml` | gitleaks sobre los commits nuevos (los del PR o los del push). Lo llaman `app-node.yml` y `ansible.yml` solos; `secretos: false` para quitarlo |
 
 ## Uso
 

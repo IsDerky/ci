@@ -12,11 +12,19 @@ on:
         description: Qué se pasa a ansible-lint
         type: string
         default: playbooks roles
+      secretos:
+        description: gitleaks sobre los commits nuevos
+        type: boolean
+        default: true
 
 permissions:
   contents: read
 
 jobs:
+  secretos:
+    if: inputs.secretos
+    uses: IsDerky/ci/.github/workflows/secretos.yml@v1
+
   lint:
     runs-on: ubuntu-latest
     defaults:
