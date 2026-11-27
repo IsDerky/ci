@@ -27,11 +27,24 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
+    concurrency:
+      # En main/master cada run va en su propio grupo: ni se cancela ni lo cancela uno nuevo
+      # en espera («higher priority waiting request»).
+      group: ansible-${{ github.repository }}-${{ github.ref }}${{ (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && format('-{0}', github.run_id) || '' }}
+      cancel-in-progress: true
     defaults:
       run:
         working-directory: ${{ inputs.directorio }}
     steps:
       - uses: actions/checkout@v5
+      # Lo que baja pip para ansible-lint (cambia poco; la clave es por semana).
+      - id: semana
+        run: echo "n=$(date +%G-%V)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-ansible-lint-${{ steps.semana.outputs.n }}
+          restore-keys: pip-ansible-lint-
       - run: pipx install ansible-lint && pipx inject ansible-lint ansible-core
       - env:
           RUTAS: ${{ inputs.rutas }}
