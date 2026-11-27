@@ -56,8 +56,11 @@ jobs:
 
   ci:
     runs-on: ubuntu-latest
+    # Un push nuevo cancela el run viejo de la misma rama (salvo en main/master, abajo).
     concurrency:
-      group: ci-${{ github.repository }}-${{ github.ref }}-${{ inputs.directorio }}
+      # En main/master cada run va en su propio grupo: ni se cancela ni lo cancela uno nuevo
+      # en espera («higher priority waiting request»).
+      group: ci-${{ github.repository }}-${{ github.ref }}-${{ inputs.directorio }}${{ (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && format('-{0}', github.run_id) || '' }}
       cancel-in-progress: true
     defaults:
       run:
@@ -77,6 +80,14 @@ jobs:
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
+
+      # setup-bun no guarda la caché de paquetes; npm y pnpm la tienen por setup-node.
+      - if: inputs.gestor == 'bun'
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles(format('{0}/bun.lock*', inputs.directorio)) }}
+          restore-keys: bun-${{ runner.os }}-
 
       - if: inputs.gestor == 'pnpm'
         uses: pnpm/action-setup@v4
@@ -110,6 +121,14 @@ jobs:
       - if: inputs.test
         run: |
           if [ "$GESTOR" = bun ]; then bun test; else $RUN test; fi
+
+      # Caché de compilación de Next: el build solo rehace lo que ha cambiado.
+      - if: inputs.build && hashFiles(format('{0}/next.config.*', inputs.directorio)) != ''
+        uses: actions/cache@v4
+        with:
+          path: ${{ inputs.directorio }}/.next/cache
+          key: next-${{ runner.os }}-${{ hashFiles(format('{0}/*.lock*', inputs.directorio), format('{0}/*-lock.*', inputs.directorio)) }}-${{ github.sha }}
+          restore-keys: next-${{ runner.os }}-${{ hashFiles(format('{0}/*.lock*', inputs.directorio), format('{0}/*-lock.*', inputs.directorio)) }}-
 
       - if: inputs.build
         run: $RUN build
